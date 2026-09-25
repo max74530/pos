@@ -472,12 +472,18 @@ async function openDaily() {
 }
 
 function print401() {
-  const body = document.body.innerHTML;
+  const ym = (document.getElementById("rpt-month") || {}).value || "";
   const part = document.getElementById("print401").innerHTML;
-  document.body.innerHTML = "<h1>營業人使用二聯式收銀機統一發票明細表</h1>" + part;
-  window.print();
-  document.body.innerHTML = body;
-  openReport(document.getElementById("rpt-month").value);
+  const w = window.open("", "_blank", "width=900,height=700");
+  if (!w) { showError("列印視窗被阻擋，請允許彈出視窗"); return; }
+  w.document.write("<html><head><meta charset='utf-8'><title>401明細表 " + ym + "</title><style>"
+    + "body{font-family:sans-serif;color:#000;background:#fff;font-size:18px;padding:24px;}"
+    + "h2{font-size:24px;}table{width:100%;border-collapse:collapse;}"
+    + "td,th{border:1px solid #000;padding:4px 8px;}</style></head><body>"
+    + "<h2>營業人使用二聯式收銀機統一發票明細表</h2>" + part + "</body></html>");
+  w.document.close();
+  w.focus();
+  w.print();
 }
 
 async function voidInvoice(no) {

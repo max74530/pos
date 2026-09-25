@@ -33,26 +33,11 @@ class POSCart:
         self._next_id = 1
 
     def add_item(self, item_name=DEFAULT_ITEM_NAME, qty=1, unit_price=0, amount=None) -> dict:
-        """加入一筆明細。舊格式 add_item(amount) 仍相容：視為 文具×1@amount。"""
-        if amount is not None and (unit_price in (0, None)):
-            # 舊呼叫 add_item(100)：第一個位置參數其實是金額
-            if isinstance(item_name, (int, float)) and qty == 1:
-                amount = int(item_name)
-                name, q, p, total = DEFAULT_ITEM_NAME, 1, amount, amount
-                if total < 1 or total > MAX_UNIT_PRICE:
-                    raise ValueError(f"單價超出範圍 (必須在 1 至 {MAX_UNIT_PRICE} 元之間)")
-            else:
-                raise ValueError("單價必須是整數")
-        elif isinstance(item_name, (int, float)) and qty == 1 and not unit_price:
-            # add_item(100) 簡寫
-            total = int(item_name)
-            if total < 1 or total > MAX_UNIT_PRICE:
-                raise ValueError(f"單價超出範圍 (必須在 1 至 {MAX_UNIT_PRICE} 元之間)")
-            name, q, p = DEFAULT_ITEM_NAME, 1, total
-        else:
-            if unit_price is None:
-                raise ValueError("單價必須是整數")
-            name, q, p, total = validate_line(item_name, qty, unit_price)
+        """加入一筆明細。舊格式 add_item(100) 仍相容：視為 文具×1@100。"""
+        if isinstance(item_name, (int, float)) and not isinstance(item_name, bool) \
+                and qty == 1 and unit_price in (0, None) and amount is None:
+            item_name, qty, unit_price = DEFAULT_ITEM_NAME, 1, int(item_name)
+        name, q, p, total = validate_line(item_name, qty, unit_price if unit_price is not None else 0)
         item = {"id": self._next_id, "item_name": name, "qty": q,
                 "unit_price": p, "amount": total}
         self.items.append(item)

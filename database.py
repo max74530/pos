@@ -1,5 +1,6 @@
 # database.py — WEBPOS 本地 SQLite 資料庫模組
 import os
+import re
 import sqlite3
 from datetime import datetime
 
@@ -91,6 +92,10 @@ def init_db():
     if "change" not in cols:
         cursor.execute('ALTER TABLE invoices ADD COLUMN "change" INTEGER NOT NULL DEFAULT 0')
 
+    # 6. 常用查詢索引（報表按月/日掃 created_at，明細按發票號關聯）
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_invoices_created ON invoices (created_at)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_sales_invoice ON sales (invoice_no)")
+
     conn.commit()
     conn.close()
     return ["sales", "invoices", "invoice_seq", "shop_config"]
@@ -110,8 +115,14 @@ def get_invoice_seq():
 
 def set_invoice_seq(prefix: str, current_no: int, start_no: int, end_no: int):
     """手動修改/設定當期發票字軌。允許 current_no = end_no+1 表示用罄狀態。"""
+    prefix = (prefix or "").strip().upper()
     if len(prefix) != 2 or not prefix.isalpha():
         raise ValueError("發票前綴必須是 2 碼英文字母")
+    for label, v in (("起始號碼", start_no), ("終止號碼", end_no), ("目前號碼", current_no)):
+        if isinstance(v, bool) or not isinstance(v, int):
+            raise ValueError(f"{label}必須是整數")
+    if start_no > end_no:
+        raise ValueError("起始號碼不可大於終止號碼")
     if current_no < start_no or current_no > end_no + 1:
         raise ValueError("當前號碼必須在起始與終止號碼之間")
     
@@ -183,7 +194,6 @@ def checkout_transaction(items: list, custom_invoice_no: str = None, tendered: i
         # 1. 取得發票號碼
         if custom_invoice_no:
             # 手動輸入發票號碼驗證
-            import re
             if not re.match(r"^[A-Z]{2}[0-9]{8}$", custom_invoice_no):
                 raise ValueError("發票號碼格式必須為 2 碼大寫英文 + 8 碼數字")
             invoice_no = custom_invoice_no
@@ -410,7 +420,6 @@ def get_monthly_report(year_month: str):
     - total_amount / sales_amount / tax_amount / period（申報期別 1-6）
     """
     import calendar
-    import re
     if not re.match(r"^\d{4}-\d{2}$", year_month or ""):
         raise ValueError("月份格式錯誤 YYYY-MM")
     year, month = int(year_month[:4]), int(year_month[5:7])

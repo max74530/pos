@@ -230,4 +230,5 @@ def api_report_csv():
     )
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    import os as _os
+    app.run(host="0.0.0.0", port=5000, debug=_os.environ.get("WEBPOS_DEBUG") == "1")
