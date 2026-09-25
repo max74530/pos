@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>{{ shop_name }} POS 系統 v{{ version }}</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <h1 id="shop-title">{{ shop_name }} POS 系統 v{{ version }}</h1>
+  <div id="invoice-bar">
+    <span id="invoice-used">下一張：</span>
+    <input type="hidden" id="invoice-input" value="">
+    <button onclick="openShopSettings()" title="設定公司資料">商店設定</button>
+    <button onclick="openSeqSettings()" title="設定發票字軌">字軌設定</button>
+    <span id="invoice-warn"></span>
+  </div>
+</header>
+<main>
+  <section id="left">
+    <h2>【交易輸入區】</h2>
+    <label class="field-label" for="name-input">品名</label>
+    <input id="name-input" value="文具" autocomplete="off">
+    <label class="field-label" for="qty-input">數量（1–99）</label>
+    <input id="qty-input" inputmode="numeric" value="1" autocomplete="off">
+    <label class="field-label" for="price-input">單價（1–5000）</label>
+    <input id="price-input" inputmode="numeric" placeholder="輸入單價" autocomplete="off">
+    <div class="hint">Tab 切換欄位，單價欄按 Enter 加入</div>
+    <div class="quick-row">
+      <button onclick="setPrice(50)">$50</button>
+      <button onclick="setPrice(100)">$100</button>
+      <button onclick="setPrice(200)">$200</button>
+      <button onclick="setPrice(500)">$500</button>
+    </div>
+    <button id="btn-add" onclick="addFromInput()">確認加入 (Enter)</button>
+    <div id="touchpad">
+      <button onclick="tapDigit('7')">7</button>
+      <button onclick="tapDigit('8')">8</button>
+      <button onclick="tapDigit('9')">9</button>
+      <button onclick="tapDigit('4')">4</button>
+      <button onclick="tapDigit('5')">5</button>
+      <button onclick="tapDigit('6')">6</button>
+      <button onclick="tapDigit('1')">1</button>
+      <button onclick="tapDigit('2')">2</button>
+      <button onclick="tapDigit('3')">3</button>
+      <button onclick="tapDigit('0')">0</button>
+      <button onclick="tapDigit('00')">00</button>
+      <button onclick="clearActiveField()">清除 (Esc)</button>
+    </div>
+    <div id="error-msg"></div>
+  </section>
+  <section id="right">
+    <h2>【當前交易明細 (共 20 行)】↑↓選取・M修改・Del刪除</h2>
+    <div id="cart-wrap">
+      <table id="cart-table">
+        <colgroup>
+          <col style="width:8%">
+          <col style="width:26%">
+          <col style="width:12%">
+          <col style="width:16%">
+          <col style="width:18%">
+          <col style="width:20%">
+        </colgroup>
+        <thead>
+          <tr><th>項次</th><th>品名</th><th>數量</th><th>單價</th><th>總金額</th><th>操作</th></tr>
+        </thead>
+        <tbody id="cart-body"></tbody>
+      </table>
+    </div>
+    <div id="total">總計金額: $0 元</div>
+  </section>
+</main>
+<footer>
+  <button id="btn-checkout" onclick="checkout()">F9 結帳列印發票</button>
+  <button id="btn-clear" onclick="clearAll()">Esc 整單清除</button>
+  <button id="btn-report" onclick="openReport()">F5 產生報表</button>
+</footer>
+<div id="modal"><div id="modal-box"></div></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
